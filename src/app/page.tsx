@@ -58,7 +58,7 @@ export default function Home() {
             We stand at the threshold.
           </h2>
           <p className="mb-6 text-lg leading-relaxed text-neutral-300">
-            There is a place beyond the edge of the known—a coordinate whispered
+            There is a place beyond the edge of the known, a coordinate whispered
             in the language of stars, a waypoint where the familiar ends and the
             infinite begins. We call it <strong className="text-white">Vesperion Gate</strong>.
           </p>
@@ -75,7 +75,7 @@ export default function Home() {
             At the Edge of Evening
           </h2>
           <p className="mb-6 text-lg leading-relaxed text-neutral-300">
-            The name carries the light of the evening star—that luminous moment
+            The name carries the light of the evening star, that luminous moment
             when day yields to night, when certainty dissolves into possibility.
             This is where we operate: in the liminal space between what is and
             what could be.
@@ -135,7 +135,7 @@ export default function Home() {
             </p>
             <p className="text-lg leading-relaxed text-neutral-300">
               <strong className="text-white">Remain at the edge.</strong> Success
-              is not arrival—it is the perpetual pursuit of the next horizon.
+              is not arrival, it is the perpetual pursuit of the next horizon.
               When we reach one gate, we seek the next.
             </p>
           </div>
@@ -151,10 +151,10 @@ export default function Home() {
           <div className="space-y-6">
             <p className="text-lg leading-relaxed text-neutral-300">
               We believe artificial intelligence is not a destination but a
-              threshold—one of many that humanity must cross.
+              threshold, one of many that humanity must cross.
             </p>
             <p className="text-lg leading-relaxed text-neutral-300">
-              We believe civilization-scale tools require civilization-scale
+              We believe civilization scale tools require civilization scale
               thinking.
             </p>
             <p className="text-lg leading-relaxed text-neutral-300">
@@ -206,7 +206,7 @@ export default function Home() {
 
             <article>
               <p className="text-lg leading-relaxed text-neutral-300">
-                <strong className="text-white">02. Local-first is survival.</strong>{" "}
+                <strong className="text-white">02. Local first is survival.</strong>{" "}
                 Cloud dependency is a single point of failure dressed as
                 convenience. Data that lives only on distant servers is data
                 held hostage. Build for the disconnected case first.
@@ -217,7 +217,7 @@ export default function Home() {
               <p className="text-lg leading-relaxed text-neutral-300">
                 <strong className="text-white">03. The terminal will outlive every GUI.</strong>{" "}
                 Graphical interfaces chase trends. Command lines endure. Text
-                in, text out—the most durable interface pattern in computing
+                in, text out, the most durable interface pattern in computing
                 history. We do not abandon what works.
               </p>
             </article>
@@ -236,7 +236,7 @@ export default function Home() {
                 <strong className="text-white">05. Dependencies are future liabilities.</strong>{" "}
                 Every external library is a bet that strangers will maintain
                 code you cannot live without. Fewer dependencies, fewer failure
-                modes. Vendoring is not paranoia—it is prudence.
+                modes. Vendoring is not paranoia, it is prudence.
               </p>
             </article>
 
@@ -269,8 +269,8 @@ export default function Home() {
 
             <article>
               <p className="text-lg leading-relaxed text-neutral-300">
-                <strong className="text-white">09. Keyboard-first acknowledges expertise.</strong>{" "}
-                Point-and-click is for discovery. Keyboard shortcuts are for
+                <strong className="text-white">09. Keyboard first acknowledges expertise.</strong>{" "}
+                Point and click is for discovery. Keyboard shortcuts are for
                 mastery. Software that only offers the mouse has decided its
                 users will never become experts.
               </p>
@@ -280,7 +280,7 @@ export default function Home() {
               <p className="text-lg leading-relaxed text-neutral-300">
                 <strong className="text-white">10. Documentation is product.</strong>{" "}
                 Undocumented features do not exist. The manual is not an
-                afterthought—it is part of the build. If you cannot explain it
+                afterthought, it is part of the build. If you cannot explain it
                 clearly, you have not finished building it.
               </p>
             </article>
@@ -297,7 +297,7 @@ export default function Home() {
             <article>
               <p className="text-lg leading-relaxed text-neutral-300">
                 <strong className="text-white">12. Names carry weight.</strong>{" "}
-                Variables, functions, products, companies—naming is the first
+                Variables, functions, products, and companies. Naming is the first
                 design decision and it echoes through everything that follows.
                 Bad names create permanent confusion. Choose with care.
               </p>
@@ -307,7 +307,7 @@ export default function Home() {
               <p className="text-lg leading-relaxed text-neutral-300">
                 <strong className="text-white">13. Backwards compatibility is a promise.</strong>{" "}
                 Breaking changes break trust. When people build on your work,
-                you inherit an obligation to them. Stability is not stagnation—it
+                you inherit an obligation to them. Stability is not stagnation, it
                 is reliability.
               </p>
             </article>
@@ -352,7 +352,7 @@ export default function Home() {
               <p className="text-lg leading-relaxed text-neutral-300">
                 <strong className="text-white">18. Browser tabs are a symptom.</strong>{" "}
                 When users keep twenty tabs open to use your product, you have
-                not built a tool—you have built a scavenger hunt. Consolidate
+                not built a tool. You have built a scavenger hunt. Consolidate
                 context. Reduce cognitive load.
               </p>
             </article>
@@ -360,7 +360,7 @@ export default function Home() {
             <article>
               <p className="text-lg leading-relaxed text-neutral-300">
                 <strong className="text-white">19. Dark patterns are engineering failures.</strong>{" "}
-                Tricking users into clicks is not growth—it is erosion of trust.
+                Tricking users into clicks is not growth, it is erosion of trust.
                 Deceptive design is a confession that you could not earn
                 attention honestly. We do not deceive.
               </p>
@@ -405,7 +405,7 @@ export default function Home() {
             <article>
               <p className="text-lg leading-relaxed text-neutral-300">
                 <strong className="text-white">24. Tests are specifications.</strong>{" "}
-                A test suite is not a chore—it is a contract. Tests document
+                A test suite is not a chore, it is a contract. Tests document
                 what the system actually does, not what someone intended.
                 Untested behavior is undefined behavior.
               </p>
@@ -423,7 +423,7 @@ export default function Home() {
             <article>
               <p className="text-lg leading-relaxed text-neutral-300">
                 <strong className="text-white">26. Version everything.</strong>{" "}
-                Code, configuration, documentation, infrastructure—if it can
+                Code, configuration, documentation, and infrastructure. If it can
                 change, it should be tracked. History is debugging information.
                 Snapshots are time travel.
               </p>
@@ -460,7 +460,7 @@ export default function Home() {
             <article>
               <p className="text-lg leading-relaxed text-neutral-300">
                 <strong className="text-white">30. Software should become invisible.</strong>{" "}
-                The ultimate goal is not engagement—it is completion. Users
+                The ultimate goal is not engagement, it is completion. Users
                 should accomplish their purpose and leave. Attention retained
                 beyond necessity is attention stolen.
               </p>
