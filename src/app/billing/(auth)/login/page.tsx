@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, FormEvent } from "react"
+import { useState, FormEvent, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { signIn } from "@/lib/auth-client"
@@ -16,28 +16,59 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Camera, Loader2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
+import { Turnstile, TurnstileRef } from "@/components/turnstile"
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!
 
 export default function BillingLoginPage() {
   const router = useRouter()
+  const turnstileRef = useRef<TurnstileRef>(null)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+
+  const handleTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token)
+  }, [])
+
+  const handleTurnstileError = useCallback(() => {
+    setTurnstileToken(null)
+    setError("Security verification failed. Please try again.")
+  }, [])
+
+  const handleTurnstileExpired = useCallback(() => {
+    setTurnstileToken(null)
+  }, [])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError("")
+
+    if (!turnstileToken) {
+      setError("Please complete the security verification")
+      return
+    }
+
     setLoading(true)
 
     try {
       const result = await signIn.email({
         email,
         password,
+        fetchOptions: {
+          headers: {
+            "x-captcha-response": turnstileToken,
+          },
+        },
       })
 
       if (result.error) {
         setError(result.error.message || "Login failed")
+        setTurnstileToken(null)
+        turnstileRef.current?.reset()
         setLoading(false)
         return
       }
@@ -46,6 +77,8 @@ export default function BillingLoginPage() {
       router.refresh()
     } catch (err) {
       setError("Network error. Please try again.")
+      setTurnstileToken(null)
+      turnstileRef.current?.reset()
       setLoading(false)
     }
   }
@@ -54,19 +87,17 @@ export default function BillingLoginPage() {
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-600">
-            <Camera className="h-6 w-6 text-white" />
-          </div>
+          <img
+            src="/vesperiongate1.svg"
+            alt="VesperionGate"
+            className="h-12 w-12 invert"
+          />
           <h1 className="text-xl font-semibold">VesperionGate</h1>
-          <p className="text-sm text-muted-foreground">LensCherry Administration</p>
         </div>
 
         <Card>
-          <CardHeader className="space-y-1">
+          <CardHeader>
             <CardTitle className="text-xl">Sign in</CardTitle>
-            <CardDescription>
-              Enter your credentials to access the billing dashboard
-            </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
@@ -96,6 +127,17 @@ export default function BillingLoginPage() {
                 />
               </div>
 
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={TURNSTILE_SITE_KEY}
+                onVerify={handleTurnstileVerify}
+                onError={handleTurnstileError}
+                onExpired={handleTurnstileExpired}
+                theme="dark"
+                size="flexible"
+                action="login"
+              />
+
               {error && (
                 <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
@@ -106,7 +148,7 @@ export default function BillingLoginPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={loading || !email || !password}
+                disabled={loading || !email || !password || !turnstileToken}
               >
                 {loading ? (
                   <>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, FormEvent } from "react"
+import { useState, FormEvent, useCallback, useRef } from "react"
 import Link from "next/link"
 import { forgetPassword } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
@@ -15,27 +15,58 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Camera, Loader2, CheckCircle2, ArrowLeft } from "lucide-react"
+import { Loader2, CheckCircle2, ArrowLeft } from "lucide-react"
+import { Turnstile, TurnstileRef } from "@/components/turnstile"
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!
 
 export default function ForgotPasswordPage() {
+  const turnstileRef = useRef<TurnstileRef>(null)
   const [email, setEmail] = useState("")
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+
+  const handleTurnstileVerify = useCallback((token: string) => {
+    setTurnstileToken(token)
+  }, [])
+
+  const handleTurnstileError = useCallback(() => {
+    setTurnstileToken(null)
+    setError("Security verification failed. Please try again.")
+  }, [])
+
+  const handleTurnstileExpired = useCallback(() => {
+    setTurnstileToken(null)
+  }, [])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError("")
+
+    if (!turnstileToken) {
+      setError("Please complete the security verification")
+      return
+    }
+
     setLoading(true)
 
     try {
       const result = await forgetPassword({
         email,
         redirectTo: "/billing/reset-password",
+        fetchOptions: {
+          headers: {
+            "x-captcha-response": turnstileToken,
+          },
+        },
       })
 
       if (result.error) {
         setError(result.error.message || "Failed to send reset email")
+        setTurnstileToken(null)
+        turnstileRef.current?.reset()
         setLoading(false)
         return
       }
@@ -43,6 +74,8 @@ export default function ForgotPasswordPage() {
       setSuccess(true)
     } catch (err) {
       setError("Network error. Please try again.")
+      setTurnstileToken(null)
+      turnstileRef.current?.reset()
     } finally {
       setLoading(false)
     }
@@ -78,9 +111,11 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center gap-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-600">
-            <Camera className="h-6 w-6 text-white" />
-          </div>
+          <img
+            src="/vesperiongate1.svg"
+            alt="VesperionGate"
+            className="h-12 w-12 invert"
+          />
           <h1 className="text-xl font-semibold">VesperionGate</h1>
         </div>
 
@@ -107,6 +142,17 @@ export default function ForgotPasswordPage() {
                 />
               </div>
 
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={TURNSTILE_SITE_KEY}
+                onVerify={handleTurnstileVerify}
+                onError={handleTurnstileError}
+                onExpired={handleTurnstileExpired}
+                theme="dark"
+                size="flexible"
+                action="forgot-password"
+              />
+
               {error && (
                 <Alert variant="destructive">
                   <AlertDescription>{error}</AlertDescription>
@@ -114,7 +160,7 @@ export default function ForgotPasswordPage() {
               )}
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-              <Button type="submit" className="w-full" disabled={loading || !email}>
+              <Button type="submit" className="w-full" disabled={loading || !email || !turnstileToken}>
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

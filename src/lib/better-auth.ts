@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { nextCookies } from 'better-auth/next-js'
+import { captcha } from 'better-auth/plugins'
 import { authPrisma } from './auth-db'
 import { resend, FROM_EMAIL } from './resend'
 
@@ -8,7 +9,13 @@ export const auth = betterAuth({
   database: prismaAdapter(authPrisma, {
     provider: 'postgresql',
   }),
-  plugins: [nextCookies()], // Must be last plugin
+  plugins: [
+    captcha({
+      provider: 'cloudflare-turnstile',
+      secretKey: process.env.TURNSTILE_SECRET_KEY!,
+    }),
+    nextCookies(), // Must be last plugin
+  ],
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
 
