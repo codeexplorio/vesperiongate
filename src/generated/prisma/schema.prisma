@@ -1,0 +1,370 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Read-only models for LensCherry admin dashboard
+
+model user {
+  id                         String                  @id @default(cuid())
+  name                       String
+  email                      String                  @unique
+  image                      String?
+  subscription_tier          String?                 @map("subscription_tier")
+  subscription_status        String                  @default("pending") @map("subscription_status")
+  is_comped                  Boolean                 @default(false) @map("is_comped")
+  stripe_customer_id         String?                 @unique @map("stripe_customer_id")
+  credits                    Int                     @default(0)
+  models_limit               Int                     @default(0) @map("models_limit")
+  storage_used_bytes         BigInt                  @default(0) @map("storage_used_bytes")
+  storage_limit_bytes        BigInt                  @default(1073741824) @map("storage_limit_bytes")
+  storage_last_calculated_at DateTime?               @map("storage_last_calculated_at")
+  createdAt                  DateTime                @default(now()) @map("created_at")
+  emailVerified              Boolean                 @default(false) @map("email_verified")
+  updatedAt                  DateTime                @updatedAt @map("updated_at")
+  accounts                   account[]
+  models                     ai_model[]
+  modifiedModels             ai_model[]              @relation("ModelModifier")
+  favorites                  favorite[]
+  photos                     photo[]
+  sessions                   session[]
+  storage_items              storage_item[]
+  model_folders              model_folder[]
+  photo_folders              photo_folder[]
+  modelComments              model_comment[]
+  photoComments              photo_comment[]
+  modelChangeLogs            model_change_log[]
+  referenceImages            model_reference_image[]
+  subscriptionHistory        subscription_history[]
+
+  @@index([email])
+  @@index([stripe_customer_id])
+}
+
+model session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime @map("expires_at")
+  ipAddress String?  @map("ip_address")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  userAgent String?  @map("user_agent")
+  userId    String   @map("user_id")
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+model account {
+  id                    String    @id @default(cuid())
+  scope                 String?
+  password              String?
+  accessToken           String?   @map("access_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  accountId             String    @map("account_id")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  idToken               String?   @map("id_token")
+  providerId            String    @map("provider_id")
+  refreshToken          String?   @map("refresh_token")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  userId                String    @map("user_id")
+  user                  user      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  createdAt  DateTime @default(now()) @map("created_at")
+  expiresAt  DateTime @map("expires_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+}
+
+model ai_model {
+  id                   String                  @id @default(cuid())
+  user_id              String
+  name                 String
+  type                 String
+  status               String                  @default("completed")
+  training_images      String[]
+  training_images_keys String[]
+  total_size_bytes     BigInt?                 @default(0)
+  created_at           DateTime                @default(now())
+  updated_at           DateTime                @updatedAt
+  folder_id            String?
+  tos_agreement        Boolean                 @default(false)
+  attributes           Json?
+  cover_image_url      String?
+  description          String?
+  is_archived          Boolean                 @default(false) @map("is_archived")
+  archived_at          DateTime?               @map("archived_at")
+  last_modified_by     String?                 @map("last_modified_by")
+  last_modified_at     DateTime?               @map("last_modified_at")
+  user                 user                    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  folder               model_folder?           @relation(fields: [folder_id], references: [id])
+  lastModifier         user?                   @relation("ModelModifier", fields: [last_modified_by], references: [id])
+  photos               photo[]
+  comments             model_comment[]
+  changeLogs           model_change_log[]
+  referenceImages      model_reference_image[]
+
+  @@index([user_id])
+  @@index([folder_id])
+  @@index([last_modified_by])
+}
+
+model model_folder {
+  id         String     @id @default(cuid())
+  user_id    String
+  name       String
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+  user       user       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  models     ai_model[]
+
+  @@index([user_id])
+}
+
+model photo {
+  id                 String                  @id @default(cuid())
+  user_id            String
+  model_id           String?
+  folder_id          String?
+  url                String
+  s3_key             String?
+  thumbnail_url      String?
+  width              Int
+  height             Int
+  prompt             String                  @db.Text
+  negative_prompt    String?                 @db.Text
+  seed               String?
+  is_favorite        Boolean                 @default(false)
+  is_deleted         Boolean                 @default(false)
+  deleted_at         DateTime?
+  credits_used       Int                     @default(0)
+  generation_time_ms Int?
+  created_at         DateTime                @default(now())
+  updated_at         DateTime?               @updatedAt
+  is_archived        Boolean                 @default(false) @map("is_archived")
+  archived_at        DateTime?               @map("archived_at")
+  user               user                    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  model              ai_model?               @relation(fields: [model_id], references: [id])
+  folder             photo_folder?           @relation(fields: [folder_id], references: [id])
+  videos             video[]
+  favorites          favorite[]
+  comments           photo_comment[]
+  referenceImages    photo_reference_image[]
+
+  @@index([user_id])
+  @@index([model_id])
+  @@index([folder_id])
+  @@index([created_at])
+}
+
+model photo_reference_image {
+  id         String   @id @default(cuid())
+  photo_id   String   @map("photo_id")
+  s3_key     String   @map("s3_key")
+  url        String
+  filename   String
+  file_size  Int      @map("file_size")
+  width      Int?
+  height     Int?
+  mime_type  String   @map("mime_type")
+  created_at DateTime @default(now()) @map("created_at")
+  photo      photo    @relation(fields: [photo_id], references: [id], onDelete: Cascade)
+
+  @@index([photo_id])
+  @@map("photo_reference_image")
+}
+
+model video {
+  id                 String    @id @default(cuid())
+  user_id            String
+  photo_id           String
+  url                String
+  thumbnail_url      String?
+  duration_seconds   Int?
+  is_talking         Boolean   @default(false)
+  talking_script     String?
+  voice_id           String?
+  status             String    @default("processing")
+  credits_used       Int       @default(10)
+  generation_time_ms Int?
+  created_at         DateTime  @default(now())
+  completed_at       DateTime?
+  photo              photo     @relation(fields: [photo_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([photo_id])
+  @@index([status])
+}
+
+model favorite {
+  id         String   @id @default(cuid())
+  user_id    String
+  photo_id   String
+  created_at DateTime @default(now())
+  photo      photo    @relation(fields: [photo_id], references: [id], onDelete: Cascade)
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, photo_id])
+  @@index([user_id])
+}
+
+model photo_pack {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String
+  category      String
+  thumbnail_url String
+  num_photos    Int      @default(32)
+  credits_cost  Int      @default(160)
+  prompts       String[]
+  is_active     Boolean  @default(true)
+  sort_order    Int      @default(0)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  @@index([category])
+  @@index([is_active])
+  @@index([sort_order])
+}
+
+model credit_transaction {
+  id              String   @id @default(cuid())
+  user_id         String
+  amount          Int
+  balance_after   Int
+  type            String
+  description     String
+  photo_id        String?
+  video_id        String?
+  model_id        String?
+  idempotency_key String?  @unique
+  created_at      DateTime @default(now())
+
+  @@index([user_id])
+  @@index([created_at])
+}
+
+model subscription_history {
+  id                     String    @id @default(cuid())
+  user_id                String    @map("user_id")
+  tier                   String
+  status                 String
+  stripe_subscription_id String?   @map("stripe_subscription_id")
+  stripe_customer_id     String?   @map("stripe_customer_id")
+  stripe_price_id        String?   @map("stripe_price_id")
+  billing_interval       String?   @map("billing_interval")
+  started_at             DateTime  @default(now()) @map("started_at")
+  ended_at               DateTime? @map("ended_at")
+  user                   user      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([status])
+  @@index([stripe_subscription_id])
+}
+
+model storage_item {
+  id                    String    @id @default(cuid())
+  user_id               String
+  item_type             String
+  item_id               String
+  s3_key                String    @unique
+  file_size_bytes       BigInt
+  content_type          String
+  created_at            DateTime  @default(now())
+  last_accessed_at      DateTime? @map("last_accessed_at")
+  marked_for_deletion   Boolean   @default(false)
+  deletion_scheduled_at DateTime? @map("deletion_scheduled_at")
+  user                  user      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([item_type])
+  @@index([marked_for_deletion])
+  @@index([deletion_scheduled_at])
+  @@index([s3_key])
+}
+
+model photo_folder {
+  id         String   @id @default(cuid())
+  user_id    String
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  photos     photo[]
+
+  @@index([user_id])
+}
+
+model model_comment {
+  id         String   @id @default(cuid())
+  model_id   String   @map("model_id")
+  user_id    String   @map("user_id")
+  content    String   @db.Text
+  created_at DateTime @default(now()) @map("created_at")
+  updated_at DateTime @updatedAt @map("updated_at")
+  model      ai_model @relation(fields: [model_id], references: [id], onDelete: Cascade)
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([model_id])
+  @@index([user_id])
+}
+
+model photo_comment {
+  id         String   @id @default(cuid())
+  photo_id   String   @map("photo_id")
+  user_id    String   @map("user_id")
+  content    String   @db.Text
+  created_at DateTime @default(now()) @map("created_at")
+  updated_at DateTime @updatedAt @map("updated_at")
+  photo      photo    @relation(fields: [photo_id], references: [id], onDelete: Cascade)
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([photo_id])
+  @@index([user_id])
+}
+
+model model_change_log {
+  id         String   @id @default(cuid())
+  model_id   String   @map("model_id")
+  user_id    String   @map("user_id")
+  action     String
+  changes    Json?
+  created_at DateTime @default(now()) @map("created_at")
+  model      ai_model @relation(fields: [model_id], references: [id], onDelete: Cascade)
+  user       user     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([model_id])
+  @@index([user_id])
+  @@index([created_at])
+}
+
+model model_reference_image {
+  id          String   @id @default(cuid())
+  model_id    String   @map("model_id")
+  s3_key      String   @map("s3_key")
+  url         String
+  filename    String
+  file_size   Int      @map("file_size")
+  width       Int?
+  height      Int?
+  mime_type   String   @map("mime_type")
+  uploaded_by String   @map("uploaded_by")
+  uploaded_at DateTime @default(now()) @map("uploaded_at")
+  version     Int      @default(1)
+  model       ai_model @relation(fields: [model_id], references: [id], onDelete: Cascade)
+  uploader    user     @relation(fields: [uploaded_by], references: [id])
+
+  @@index([model_id])
+  @@index([uploaded_by])
+}

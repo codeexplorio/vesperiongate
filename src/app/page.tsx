@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-black">
@@ -477,6 +479,13 @@ export default function Home() {
           </p>
           <p className="text-lg font-medium text-white">Vesperion Gate Inc.</p>
         </footer>
+
+        {/* Policies Link */}
+        <div className="mt-16 text-center">
+          <Link href="/policies" className="text-neutral-500 hover:text-neutral-300 transition-colors">
+            Policies
+          </Link>
+        </div>
       </main>
     </div>
   );
